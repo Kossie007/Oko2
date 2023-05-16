@@ -15,8 +15,8 @@ library(vars) # var modellhez
 #********************************************************************************************
 
 # Yahoo finance-rők az árfolyam lekérése 2021. jan 1-től 2022. dec 31-ig
-eurxts = getSymbols("EURHUF=X", src = "yahoo", from = "2020-01-01", to = "2023-05-14", auto.assign = F)
-usdxts = getSymbols("USDHUF=X", src = "yahoo", from = "2020-01-01", to = "2023-05-14", auto.assign = F)
+eurxts = getSymbols("EURHUF=X", src = "yahoo", from = "2020-01-01", to = "2023-05-15", auto.assign = F)
+usdxts = getSymbols("USDHUF=X", src = "yahoo", from = "2020-01-01", to = "2023-05-15", auto.assign = F)
 
 # Kormányinfó dátumok
 kinfo = read.csv("Kormanyinfo.csv")
@@ -96,7 +96,7 @@ adf.test(arfolyam$usdhuf)
 # 2. lépés -------------------------
 
 arfolyam$d_eurhuf = c(NA, diff(arfolyam$eurhuf))
-arfolyam$d_usdhuf = c(NA, diff())
+arfolyam$d_usdhuf = c(NA, diff(arfolyam$usdhuf))
 
 adf.test(diff(arfolyam$eurhuf))
 adf.test(diff(arfolyam$usdhuf))
@@ -106,10 +106,17 @@ adf.test(diff(arfolyam$usdhuf))
 
 bgtest(diff(arfolyam$eurhuf) ~ 1, order = 29)
 bgtest(diff(arfolyam$usdhuf) ~ 1, order = 29)
+
+Box.test(diff(arfolyam$eurhuf), lag = 29, type = "Ljung-Box")
+Box.test(diff(arfolyam$usdhuf), lag = 29, type = "Ljung-Box")
 # nem fehérzajok még
 
 # 4. lépés -------------------------
+acf(arfolyam$d_eurhuf[-1]) # MA(1)
+pacf(arfolyam$d_eurhuf[-1]) # AR(1)
 
+acf(arfolyam$d_usdhuf[-1]) # MA(1)
+pacf(arfolyam$d_usdhuf[-1]) # AR(1) (de kiugrik a 6. és a 25. lag is)
 
 # 5. lépés -------------------------
 
