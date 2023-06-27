@@ -35,7 +35,7 @@ ggplot()+
   geom_point(data = kinfo, aes(x = time, y = usdhuf, color = "Kormányinfó"))+
   theme_minimal()
 
-rm(kinfo)
+rm(kinfodummy)
 
 # végül ez nem kell----------------
 # Google trends-ről 'korányinfó' keresési trend
@@ -47,7 +47,7 @@ rm(kinfo)
 t = c("2020-01-01 2020-04-01","2020-04-02 2020-06-30","2020-07-01 2020-10-01","2020-10-02 2021-01-01",
       "2021-01-02 2021-04-01","2021-04-02 2021-06-30","2021-07-01 2021-10-01","2021-10-02 2022-01-01",
       "2022-01-02 2022-04-01","2022-04-02 2022-06-30","2022-07-01 2022-10-01","2022-10-02 2023-01-01",
-      "2023-01-02 2023-04-01","2023-04-02 2023-05-12")
+      "2023-01-02 2023-04-01","2023-04-02 2023-05-11")
 
 # 'kinfo' dataframe létrehozása
 kinfo = data.frame()
@@ -76,7 +76,7 @@ kinfoSzuk = merge(arfolyam, kinfo)
 write.csv(kinfoSzuk[,c("time", "trend")], "KormanyinfoGoogleTrend.csv", row.names = F)
 
 kinfo = read.csv("KormanyinfoGoogleTrend.csv")
-kinfo$time = as.Date(kinfo$time)
+arfolyam$gtrend = kinfo$trend
 
 # kormányinfó trend alap vonaldiagramm, 'theme_minimal'-al
 ggplot(kinfo, aes(x = time))+
@@ -127,7 +127,15 @@ pacf(arfolyam$d_usdhuf[-1]) # AR(1) (de kiugrik a 6. és a 25. lag is)
 
 
 # 6. lépés -------------------------
+coeftest(forecast::auto.arima(arfolyam$eurhuf))
+coeftest(forecast::auto.arima(arfolyam$eurhuf, xreg = arfolyam$kinfodummy))
+coeftest(forecast::auto.arima(arfolyam$eurhuf, xreg = arfolyam$gtrend))
+eur = forecast::auto.arima(arfolyam$eurhuf, xreg = arfolyam$kinfodummy)
 
+coeftest(forecast::auto.arima(arfolyam$usdhuf))
+coeftest(forecast::auto.arima(arfolyam$usdhuf, xreg = arfolyam$kinfodummy))
+coeftest(forecast::auto.arima(arfolyam$usdhuf, xreg = arfolyam$gtrend))
+usd = forecast::auto.arima(arfolyam$usdhuf, xreg = arfolyam$gtrend)
 
 #----
 #********************************************************************************************
